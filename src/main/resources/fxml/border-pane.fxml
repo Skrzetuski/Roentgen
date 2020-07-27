@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane fx:id="borderPane" fx:controller="pl.roentgen.controller.BorderPaneController" prefHeight="359.0"
+            prefWidth="509.0" style="-fx-background-color: #000;" xmlns="http://javafx.com/javafx/10.0.2-internal"
+            xmlns:fx="http://javafx.com/fxml/1">
+    <center>
+        <ImageView fx:id="imageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true"
+                   BorderPane.alignment="CENTER"/>
+    </center>
+</BorderPane>
