@@ -1,6 +1,8 @@
 # Roentgen
 Aplikacja wspomagająca pracę lekarzy radiologów.
 
+![ImageApp](app.png)
+
 ## Technologie
 
 * Java 8 Corretto
