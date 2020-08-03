@@ -14,6 +14,7 @@ import pl.roentgen.util.field.NumberField;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 public class PointListViewController extends ListCell<Circle> implements Initializable {
 
@@ -34,11 +35,13 @@ public class PointListViewController extends ListCell<Circle> implements Initial
 
     private static final String LABEL_TEXT = "Punkt";
 
+    private final Function<NumberField, Circle> fetchCircleById = this::repositoryId;
+
     private final ObservableList<Circle> circles;
 
     private FXMLLoader fxmlLoader;
 
-    private int id;
+    private int cellId;
 
     PointListViewController(ObservableList<Circle> circles) {
         this.circles = circles;
@@ -46,24 +49,20 @@ public class PointListViewController extends ListCell<Circle> implements Initial
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         numberFieldX.setOnAction(event -> {
-            if (!numberFieldX.getText().isEmpty()) {
-                circles.stream().filter(circle -> circle.getId().equals(String.valueOf(id))).findFirst().get()
-                        .setCenterX(numberFieldX.getValue());
+                fetchCircleById.apply(numberFieldX).setCenterX(numberFieldX.getValue());
                 RoentgenController.updateFrames();
-            }
         });
 
         numberFieldY.setOnAction(event -> {
-            if (!numberFieldY.getText().isEmpty()) {
-                circles.stream().filter(circle -> circle.getId().equals(String.valueOf(id))).findFirst().get()
-                        .setCenterY(numberFieldY.getValue());
+                fetchCircleById.apply(numberFieldY).setCenterY(numberFieldY.getValue());
                 RoentgenController.updateFrames();
-            }
+
         });
 
         checkBox.setOnMouseClicked(event -> {
-            circles.stream().filter(circle -> circle.getId().equals(String.valueOf(id))).findFirst().get()
+            circles.stream().filter(circle -> circle.getId().equals(String.valueOf(cellId))).findFirst().get()
                     .setVisible(checkBox.isSelected());
             RoentgenController.updateFrames();
         });
@@ -87,7 +86,7 @@ public class PointListViewController extends ListCell<Circle> implements Initial
                 }
             }
 
-            id = Integer.parseInt(circle.getId());
+            cellId = Integer.parseInt(circle.getId());
 
             labelPoint.setText(LABEL_TEXT);
             labelPoint.setTextFill(circle.getFill());
@@ -100,5 +99,22 @@ public class PointListViewController extends ListCell<Circle> implements Initial
             setText(null);
             setGraphic(gridPane);
         }
+    }
+
+    /***
+     *  Access only by fetchCircleById field.
+     *  Get circle from list circles by circle id from value at field.
+     * @param field any NumberField
+     *
+     * @return circle from list or new instance Circle
+     * if it wouldn't find any circle that passed by ID.
+     */
+    private Circle repositoryId(NumberField field) {
+        if (!field.getText().isEmpty()) {
+            return circles.stream()
+                    .filter(circle -> circle.getId().equals(String.valueOf(cellId)))
+                    .findFirst().get();
+        }
+        return new Circle(0, 0, 5);
     }
 }
