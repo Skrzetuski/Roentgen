@@ -1,6 +1,5 @@
 package pl.roentgen.controller;
 
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -8,15 +7,15 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.GridPane;
-import javafx.scene.shape.Circle;
+import pl.roentgen.util.PointManager;
 import pl.roentgen.util.field.NumberField;
+import pl.roentgen.util.model.Point;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.function.Function;
 
-public class PointListViewController extends ListCell<Circle> implements Initializable {
+public class PointListViewController extends ListCell<Point> implements Initializable {
 
     @FXML
     private GridPane gridPane;
@@ -35,44 +34,39 @@ public class PointListViewController extends ListCell<Circle> implements Initial
 
     private static final String LABEL_TEXT = "Punkt";
 
-    private final Function<NumberField, Circle> fetchCircleById = this::repositoryId;
-
-    private final ObservableList<Circle> circles;
+    private final PointManager observable;
 
     private FXMLLoader fxmlLoader;
 
     private int cellId;
 
-    PointListViewController(ObservableList<Circle> circles) {
-        this.circles = circles;
+    PointListViewController(PointManager observable) {
+        this.observable = observable;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        numberFieldX.setOnAction(event -> {
-                fetchCircleById.apply(numberFieldX).setCenterX(numberFieldX.getValue());
-                RoentgenController.updateFrames();
-        });
+        numberFieldX.setOnAction(event -> onActionNumberField());
 
-        numberFieldY.setOnAction(event -> {
-                fetchCircleById.apply(numberFieldY).setCenterY(numberFieldY.getValue());
-                RoentgenController.updateFrames();
+        numberFieldY.setOnAction(event -> onActionNumberField());
 
-        });
+        checkBox.setOnMouseClicked(event -> onMouseClickedCheckBox());
+    }
 
-        checkBox.setOnMouseClicked(event -> {
-            circles.stream().filter(circle -> circle.getId().equals(String.valueOf(cellId))).findFirst().get()
-                    .setVisible(checkBox.isSelected());
-            RoentgenController.updateFrames();
-        });
+    private void onActionNumberField() {
+        observable.changePointPosition(cellId, numberFieldX.getValue(), numberFieldY.getValue());
+    }
+
+    private void onMouseClickedCheckBox(){
+        observable.changePointVisibility(cellId, checkBox.isSelected());
     }
 
     @Override
-    protected void updateItem(Circle circle, boolean empty) {
-        super.updateItem(circle, empty);
+    protected void updateItem(Point point, boolean empty) {
+        super.updateItem(point, empty);
 
-        if (circle == null || empty) {
+        if (point == null || empty) {
             setText(null);
             setGraphic(null);
         } else {
@@ -86,35 +80,19 @@ public class PointListViewController extends ListCell<Circle> implements Initial
                 }
             }
 
-            cellId = Integer.parseInt(circle.getId());
+            cellId = point.getId();
 
             labelPoint.setText(LABEL_TEXT);
-            labelPoint.setTextFill(circle.getFill());
+            labelPoint.setTextFill(point.getFill());
 
-            numberFieldX.setText(String.valueOf((int) circle.getCenterX()));
-            numberFieldY.setText(String.valueOf((int) circle.getCenterY()));
+            numberFieldX.setText(String.valueOf(point.getX()));
+            numberFieldY.setText(String.valueOf(point.getY()));
 
-            checkBox.setSelected(circle.isVisible());
+            checkBox.setSelected(point.isVisible());
 
             setText(null);
             setGraphic(gridPane);
         }
     }
 
-    /***
-     *  Access only by fetchCircleById field.
-     *  Get circle from list circles by circle id from value at field.
-     * @param field any NumberField
-     *
-     * @return circle from list or new instance Circle
-     * if it wouldn't find any circle that passed by ID.
-     */
-    private Circle repositoryId(NumberField field) {
-        if (!field.getText().isEmpty()) {
-            return circles.stream()
-                    .filter(circle -> circle.getId().equals(String.valueOf(cellId)))
-                    .findFirst().get();
-        }
-        return new Circle(0, 0, 5);
-    }
 }

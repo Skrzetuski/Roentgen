@@ -1,13 +1,12 @@
 package pl.roentgen.controller;
 
-import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
-import javafx.scene.shape.Circle;
+import pl.roentgen.util.PointManager;
+import pl.roentgen.util.model.Point;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -20,7 +19,7 @@ public class RoentgenController implements Initializable {
     private TilePane tilePane;
 
     @FXML
-    private ListView<Circle> listView;
+    private ListView<Point> listView;
 
     @FXML
     private BorderPaneController borderPane1Controller;
@@ -34,35 +33,30 @@ public class RoentgenController implements Initializable {
     @FXML
     private BorderPaneController borderPane4Controller;
 
-    private static List<BorderPaneController> borderPaneControllerList;
-
-    private final ObservableList<Circle> circles = FXCollections.observableArrayList();
+    private final static PointManager pointManager = new PointManager();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
-        borderPaneControllerList = Arrays.asList(
+        List<BorderPaneController> borderPaneControllerList = Arrays.asList(
                 borderPane1Controller,
                 borderPane2Controller,
                 borderPane3Controller,
                 borderPane4Controller);
 
+        for (BorderPaneController borderPane : borderPaneControllerList) {
+            borderPane.setObservable(pointManager);
+        }
+
+        pointManager.addObserver(borderPane1Controller);
+        pointManager.addObserver(borderPane2Controller);
+        pointManager.addObserver(borderPane3Controller);
+        pointManager.addObserver(borderPane4Controller);
+
         tilePane.setPrefRows(2);
         tilePane.setPrefColumns(2);
 
-        listView.setItems(circles);
-        listView.setCellFactory(pointsListView -> new PointListViewController(circles));
-
-        for (BorderPaneController bpController : borderPaneControllerList) {
-            bpController.setCircles(circles);
-        }
-
-        tilePane.setOnMouseClicked((event -> updateFrames()));
-    }
-
-    public static void updateFrames() {
-        for (BorderPaneController bpController : borderPaneControllerList) {
-            Platform.runLater(bpController::updatePoints);
-        }
+        listView.setItems(pointManager.getPoints());
+        listView.setCellFactory(pointsListView -> new PointListViewController(pointManager));
     }
 }

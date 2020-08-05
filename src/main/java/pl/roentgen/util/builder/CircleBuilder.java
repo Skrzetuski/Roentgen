@@ -1,4 +1,4 @@
-package pl.roentgen.util;
+package pl.roentgen.util.builder;
 
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
